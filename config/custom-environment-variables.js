@@ -10,6 +10,10 @@ module.exports = {
       __format: 'json'
     }
   },
+  dumpKeys: {
+    __name: 'DUMP_KEYS',
+    __format: 'json'
+  },
   cloudArchive: {
     tenant: 'CA_TENANT',
     user: 'CA_USER',
