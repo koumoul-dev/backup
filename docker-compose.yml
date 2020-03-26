@@ -1,0 +1,28 @@
+version: '3'
+services:
+  sd:
+    image: koumoul/simple-directory:2
+    ports:
+      - 8080:8080
+      - 1080:1080
+    environment:
+      - ADMINS=["alban.mouton@koumoul.com", "superadmin@test.com"]
+      - PUBLIC_URL=http://localhost:5600/simple-directory
+      - MAILDEV_ACTIVE=true
+      - STORAGE_TYPE=mongo
+
+  mongo:
+    image: mongo:4.1
+    ports:
+      - 27017:27017
+
+  notify:
+    image: koumoul/notify:master
+    network_mode: host
+    environment:
+      - PORT=8088
+      - PUBLIC_URL=http://localhost:5600/notify
+      - WS_PUBLIC_URL=ws://localhost:5600/notify
+      - DIRECTORY_URL=http://localhost:5600/simple-directory
+      - SECRET_NOTIFICATIONS=secret-notifications
+      - SECRET_SENDMAILS=secret-sendmails
