@@ -21,5 +21,6 @@ module.exports = {
   },
   secretKeys: {
     notifications: 'SECRET_NOTIFICATIONS'
-  }
+  },
+  tmpdir: 'TMPDIR'
 }

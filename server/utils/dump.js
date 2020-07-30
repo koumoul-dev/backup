@@ -28,7 +28,7 @@ exports.dump = async (dumpKey, name) => {
     const dbs = await client.db('admin').admin().listDatabases()
     await client.close()
     for (const db of dbs.databases.map(db => db.name).filter(db => !config.mongo.ignoreDBs.includes(db))) {
-      const tmpFile = await tmp.file()
+      const tmpFile = await tmp.file({ dir: config.tmpdir })
       const tmpPath = tmpFile.path
       await exec(config.mongo.cmdTmpl.replace('CMD', `mongodump --host ${config.mongo.host} --port ${config.mongo.port} --db ${db} --gzip --archive=${tmpPath}`))
       archives.push({ tmpFile, tmpPath, name: `mongo-${db}.gz` })
@@ -36,7 +36,7 @@ exports.dump = async (dumpKey, name) => {
     await client.close()
   } else if (dumpKey.startsWith('dir:')) {
     const [archiveName, dirPath] = dumpKey.split(':').slice(1)
-    const tmpFile = await tmp.dir({ unsafeCleanup: true })
+    const tmpFile = await tmp.dir({ unsafeCleanup: true, dir: config.tmpdir })
     const tmpPath = `${tmpFile.path}/archive.zip`
     await exec(`zip ${tmpPath} -q -r -- *`, { cwd: dirPath })
     archives.push({ tmpFile, tmpPath, name: `${archiveName}.zip` })
@@ -64,13 +64,13 @@ exports.restore = async (dumpKey, name) => {
   if (dumpKey.startsWith('mongo/')) {
     // for mongo the db is passed as mongo/simple-directory-production
     const db = dumpKey.replace('mongo/', '')
-    const tmpFile = await tmp.file()
+    const tmpFile = await tmp.file({ dir: config.tmpdir })
     await exec(`cat mongo-${db}.gz-* > ${tmpFile.path}`, { cwd: `${absoluteBackupDir}/${name}` })
     await exec(config.mongo.cmdTmpl.replace('CMD', `mongorestore --drop --host ${config.mongo.host} --port ${config.mongo.port} --db ${db} --gzip --archive=${tmpFile.path}`))
     tmpFile.cleanup()
   } else if (dumpKey.startsWith('dir:')) {
     const [archiveName, dirPath] = dumpKey.split(':').slice(1)
-    const tmpFile = await tmp.dir({ unsafeCleanup: true })
+    const tmpFile = await tmp.dir({ unsafeCleanup: true, dir: config.tmpdir })
     await exec(`cat ${archiveName}.zip-* > ${tmpFile.path}/archive.zip`, { cwd: `${absoluteBackupDir}/${name}` })
     await fs.ensureDir(dirPath)
     await exec(`unzip -o ${tmpFile.path}/archive.zip -d ${dirPath}`)

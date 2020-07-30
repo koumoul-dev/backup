@@ -25,5 +25,6 @@ module.exports = {
   splitSize: '200000000', // 200M
   secretKeys: {
     notifications: 'secret-notifications'
-  }
+  },
+  tmpdir: '/tmp'
 }
