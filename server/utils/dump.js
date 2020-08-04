@@ -22,6 +22,7 @@ exports.dump = async (dumpKey, name) => {
   name = name || dateStr(new Date())
 
   await fs.ensureDir(`${config.backupDir}/${name}`)
+  await fs.emptyDir(config.tmpdir)
   const archives = []
   if (dumpKey === 'mongo') {
     const client = await MongoClient.connect(`mongodb://${config.mongo.host}:${config.mongo.port}`, { useNewUrlParser: true })
