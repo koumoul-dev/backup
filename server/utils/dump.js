@@ -18,12 +18,17 @@ async function exec(cmd, opts = {}) {
   return spawn('bash', ['-c', cmd], opts)
 }
 
+async function splitArchive(archive, backupName) {
+  await exec(`split -b ${config.splitSize} ${archive.tmpPath} ${archive.name}-`, { cwd: `${absoluteBackupDir}/${backupName}` })
+  archive.tmpFile.cleanup()
+}
+
 exports.dump = async (dumpKey, name) => {
   name = name || dateStr(new Date())
 
   await fs.ensureDir(`${config.backupDir}/${name}`)
   await fs.emptyDir(config.tmpdir)
-  const archives = []
+
   if (dumpKey === 'mongo') {
     const client = await MongoClient.connect(`mongodb://${config.mongo.host}:${config.mongo.port}`, { useNewUrlParser: true })
     const dbs = await client.db('admin').admin().listDatabases()
@@ -32,7 +37,7 @@ exports.dump = async (dumpKey, name) => {
       const tmpFile = await tmp.file({ dir: config.tmpdir })
       const tmpPath = tmpFile.path
       await exec(config.mongo.cmdTmpl.replace('CMD', `mongodump --host ${config.mongo.host} --port ${config.mongo.port} --db ${db} --gzip --archive=${tmpPath}`))
-      archives.push({ tmpFile, tmpPath, name: `mongo-${db}.gz` })
+      await splitArchive({ tmpFile, tmpPath, name: `mongo-${db}.gz` }, name)
     }
     await client.close()
   } else if (dumpKey.startsWith('dir:')) {
@@ -40,14 +45,9 @@ exports.dump = async (dumpKey, name) => {
     const tmpFile = await tmp.dir({ unsafeCleanup: true, dir: config.tmpdir })
     const tmpPath = `${tmpFile.path}/archive.zip`
     await exec(`zip ${tmpPath} -q -r -- *`, { cwd: dirPath })
-    archives.push({ tmpFile, tmpPath, name: `${archiveName}.zip` })
+    await splitArchive({ tmpFile, tmpPath, name: `${archiveName}.zip` }, name)
   } else {
     throw new Error(`Unknown dump key "${dumpKey}"`)
-  }
-
-  for (const archive of archives) {
-    await exec(`split -b ${config.splitSize} ${archive.tmpPath} ${archive.name}-`, { cwd: `${absoluteBackupDir}/${name}` })
-    archive.tmpFile.cleanup()
   }
 }
 
