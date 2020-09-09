@@ -8,6 +8,10 @@ module.exports = {
     ignoreDBs: {
       __name: 'MONGO_IGNORE_DBS',
       __format: 'json'
+    },
+    dumpParams: {
+      __name: 'MONGO_DUMP_PARAMS',
+      __format: 'json'
     }
   },
   dumpKeys: {

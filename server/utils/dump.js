@@ -36,7 +36,11 @@ exports.dump = async (dumpKey, name) => {
     for (const db of dbs.databases.map(db => db.name).filter(db => !config.mongo.ignoreDBs.includes(db))) {
       const tmpFile = await tmp.file({ dir: config.tmpdir })
       const tmpPath = tmpFile.path
-      await exec(config.mongo.cmdTmpl.replace('CMD', `mongodump --host ${config.mongo.host} --port ${config.mongo.port} --db ${db} --gzip --archive=${tmpPath}`))
+      let cmd = `mongodump --host ${config.mongo.host} --port ${config.mongo.port} --db ${db} --gzip --archive=${tmpPath}`
+      if (config.mongo.dumpParams && config.mongo.dumpParams[db]) {
+        cmd += ` ${config.mongo.dumpParams[db]}`
+      }
+      await exec(config.mongo.cmdTmpl.replace('CMD', cmd))
       await splitArchive({ tmpFile, tmpPath, name: `mongo-${db}.gz` }, name)
     }
     await client.close()

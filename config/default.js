@@ -8,7 +8,8 @@ module.exports = {
     host: 'localhost',
     port: 27017,
     cmdTmpl: 'CMD',
-    ignoreDBs: ['admin', 'config', 'local']
+    ignoreDBs: ['admin', 'config', 'local'],
+    dumpParams: {}
   },
   backupDir: `data/backup`,
   dumpKeys: [
@@ -26,5 +27,5 @@ module.exports = {
   secretKeys: {
     notifications: 'secret-notifications'
   },
-  tmpdir: '/tmp'
+  tmpdir: '/tmp/backup'
 }
