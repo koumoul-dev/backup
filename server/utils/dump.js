@@ -36,7 +36,7 @@ exports.dump = async (dumpKey, name) => {
     for (const db of dbs.databases.map(db => db.name).filter(db => !config.mongo.ignoreDBs.includes(db))) {
       const tmpFile = await tmp.file({ dir: config.tmpdir })
       const tmpPath = tmpFile.path
-      let cmd = `mongodump --host ${config.mongo.host} --port ${config.mongo.port} --db ${db} --gzip --archive=${tmpPath} --quiet`
+      let cmd = `mongodump --host ${config.mongo.host} --port ${config.mongo.port} --db ${db} --gzip --archive=${tmpPath}`
       if (config.mongo.dumpParams && config.mongo.dumpParams[db]) {
         cmd += ` ${config.mongo.dumpParams[db]}`
       }
