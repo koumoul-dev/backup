@@ -5,6 +5,7 @@ module.exports = {
   notifyUrl: 'NOTIFY_URL',
   mongo: {
     host: 'MONGO_HOST',
+    readPreference: 'MONGO_READ_PREFERENCE',
     ignoreDBs: {
       __name: 'MONGO_IGNORE_DBS',
       __format: 'json'
