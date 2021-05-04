@@ -27,9 +27,12 @@ async function splitArchive(archive, backupName) {
   archive.tmpFile.cleanup()
 }
 
-exports.dump = async (dumpKey, name) => {
-  name = name || dateStr(dayjs())
+exports.name = (name) => {
+  return name || dateStr(dayjs())
+}
 
+exports.dump = async (dumpKey, name) => {
+  name = exports.name(name)
   await fs.ensureDir(`${config.backupDir}/${name}`)
   await fs.emptyDir(config.tmpdir)
 
