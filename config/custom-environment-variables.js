@@ -24,6 +24,28 @@ module.exports = {
     user: 'CA_USER',
     password: 'CA_PASSWORD'
   },
+  rotation: {
+    day: {
+      __name: 'ROTATION_DAY',
+      __format: 'json'
+    },
+    week: {
+      __name: 'ROTATION_WEEK',
+      __format: 'json'
+    },
+    month: {
+      __name: 'ROTATION_MONTH',
+      __format: 'json'
+    },
+    quarter: {
+      __name: 'ROTATION_QUARTER',
+      __format: 'json'
+    },
+    year: {
+      __name: 'ROTATION_YEAR',
+      __format: 'json'
+    }
+  },
   secretKeys: {
     notifications: 'SECRET_NOTIFICATIONS'
   },

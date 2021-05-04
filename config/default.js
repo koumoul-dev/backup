@@ -25,6 +25,13 @@ module.exports = {
     password: null
   },
   splitSize: '200000000', // 200M
+  rotation: {
+    day: 4, // number of fresh daily dumps
+    week: 3,
+    month: 2,
+    quarter: 3,
+    year: 1
+  },
   secretKeys: {
     notifications: 'secret-notifications'
   },

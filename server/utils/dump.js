@@ -1,7 +1,11 @@
 const fs = require('fs-extra')
 const path = require('path')
 const config = require('config')
-const moment = require('moment')
+const dayjs = require('dayjs')
+const quarterOfYear = require('dayjs/plugin/quarterOfYear')
+dayjs.extend(quarterOfYear)
+const utc = require('dayjs/plugin/utc')
+dayjs.extend(utc)
 const { spawn } = require('child-process-promise')
 const { MongoClient } = require('mongodb')
 const tmp = require('tmp-promise')
@@ -24,7 +28,7 @@ async function splitArchive(archive, backupName) {
 }
 
 exports.dump = async (dumpKey, name) => {
-  name = name || dateStr(new Date())
+  name = name || dateStr(dayjs())
 
   await fs.ensureDir(`${config.backupDir}/${name}`)
   await fs.emptyDir(config.tmpdir)
@@ -56,7 +60,7 @@ exports.dump = async (dumpKey, name) => {
 }
 
 exports.archive = async (name) => {
-  name = name || dateStr(new Date())
+  name = name || dateStr(dayjs())
   const files = await fs.readdir(`${absoluteBackupDir}/${name}`)
   for (const file of files) {
     // await exec(`sshpass -f /tmp/ca-password.txt rsync -e "ssh -o StrictHostKeyChecking=no" -av ${absoluteBackupDir}/${name}/* pca@gateways.storage.sbg.cloud.ovh.net:backup/${name}/`)
@@ -65,7 +69,7 @@ exports.archive = async (name) => {
 }
 
 exports.restore = async (dumpKey, name) => {
-  name = name || dateStr(new Date())
+  name = name || dateStr(dayjs())
   if (dumpKey.startsWith('mongo/')) {
     // for mongo the db is passed as mongo/simple-directory-production
     const db = dumpKey.replace('mongo/', '')
@@ -86,45 +90,27 @@ exports.restore = async (dumpKey, name) => {
 }
 
 function dateStr(d) {
-  return d.toISOString().slice(0, 10)
+  return d.format().slice(0, 10)
 }
 
 // manage and remove deprecated daily/weekly/monthly dumps
 exports.rotate = async () => {
-  const now = moment()
-  const last = dateStr(now)
+  const now = dayjs.utc()
+
+  const keepDirs = [dateStr(now)]
+  for (const unit of ['day', 'week', 'month', 'quarter', 'year']) {
+    for (let i = 0; i < config.rotation[unit]; i++) {
+      const dir = dateStr(now.startOf(unit).subtract(i, unit))
+      console.log(`rotation ${unit}/-${i}, keep directory ${dir}`)
+      keepDirs.push(dir)
+    }
+  }
+
   const dirs = await fs.readdir(config.backupDir)
   for (const dir of dirs) {
-    if (dir === last) continue
     if (isNaN(new Date(dir).getTime())) continue
-
-    const date = moment(dir)
-    const age = now.diff(date, 'days')
-
-    if (date.date() === 1) {
-      // first day of month means a monthly backup, keep it for 1 year
-      if (age > 365) {
-        console.log('Remove old monthly dump', dir)
-        await fs.remove(`${config.backupDir}/${dir}`)
-      } else {
-        console.log('Keep monthly dump', dir)
-      }
-    } else if (date.weekday() === 1) {
-      // first day of week means a weekly backup, keep it 3 weeks
-      if (age > 22) {
-        console.log('Remove old weekly dump', dir)
-        await fs.remove(`${config.backupDir}/${dir}`)
-      } else {
-        console.log('Keep weekly dump', dir)
-      }
-    } else {
-      // others are daily backup, keep 4 days
-      if (age > 4) {
-        console.log('Remove old daily dump', dir)
-        await fs.remove(`${config.backupDir}/${dir}`)
-      } else {
-        console.log('Keep daily dump', dir)
-      }
-    }
+    if (keepDirs.includes(dir)) continue
+    console.log('remove deprecated backup directory', dir)
+    await fs.remove(`${config.backupDir}/${dir}`)
   }
 }
