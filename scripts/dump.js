@@ -9,6 +9,7 @@ const start = moment()
 async function main() {
   const name = dumpUtils.name(process.argv[3])
   try {
+    await dumpUtils.rotate()
     if (process.argv[2] === 'all') {
       for (const dumpKey of config.dumpKeys) {
         await dumpUtils.dump(dumpKey)
@@ -16,7 +17,6 @@ async function main() {
     } else {
       await dumpUtils.dump(process.argv[2], process.argv[3])
     }
-    await dumpUtils.rotate()
     if (config.cloudArchive.tenant && moment().day() === 1) {
       console.log('Sync backuped data to cold cloud archive every week')
       await dumpUtils.archive(process.argv[3])
