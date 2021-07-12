@@ -20,6 +20,7 @@ module.exports = {
     __format: 'json'
   },
   cloudArchive: {
+    url: 'CA_URL',
     tenant: 'CA_TENANT',
     user: 'CA_USER',
     password: 'CA_PASSWORD'

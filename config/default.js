@@ -20,6 +20,7 @@ module.exports = {
   ],
   // OVH cloud archive backend for cold archiving
   cloudArchive: {
+    url: 'pca@gateways.storage.sbg.cloud.ovh.net:backup',
     tenant: null,
     user: null,
     password: null

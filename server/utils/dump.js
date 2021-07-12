@@ -66,8 +66,8 @@ exports.archive = async (name) => {
   name = name || dateStr(dayjs())
   const files = await fs.readdir(`${absoluteBackupDir}/${name}`)
   for (const file of files) {
-    // await exec(`sshpass -f /tmp/ca-password.txt rsync -e "ssh -o StrictHostKeyChecking=no" -av ${absoluteBackupDir}/${name}/* pca@gateways.storage.sbg.cloud.ovh.net:backup/${name}/`)
-    await exec(`sshpass -f /tmp/ca-password.txt scp -o StrictHostKeyChecking=no ${absoluteBackupDir}/${name}/${file} pca@gateways.storage.sbg.cloud.ovh.net:backup/${name}-${file}`)
+    // await exec(`sshpass -f /tmp/ca-password.txt rsync -e "ssh -o StrictHostKeyChecking=no" -av ${absoluteBackupDir}/${name}/* ${config.cloudArchive.url}/${name}/`)
+    await exec(`sshpass -f /tmp/ca-password.txt scp -o StrictHostKeyChecking=no ${absoluteBackupDir}/${name}/${file} ${config.cloudArchive.url}/${name}-${file}`)
   }
 }
 
